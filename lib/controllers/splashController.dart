@@ -7,7 +7,7 @@ import '../view/home/bottombar.dart';
 
 class SplashController extends GetxController {
   SplashController();
-  final image = "assets/images/Logo.jpg";
+  final image = "assets/images/logo2.png";
 
   @override
   void onReady() {

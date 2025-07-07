@@ -1,7 +1,7 @@
 class AppUrls {
   static const String APP_NAME = 'Speech To Text';
   static const double APP_VERSION = 1.0;
-  static const String BASE_URL = "http://3.111.84.122"; //
+  static const String BASE_URL = "http://54.169.196.42";//http://3.111.84.122"; //
   static const String login = "/api/v1/user/users_login/";
   static const String signUp = "/api/v1/auth/register-email";
   static const String otpVerify = "/api/v1/user/otp_verify/";
@@ -23,5 +23,8 @@ class AppUrls {
        static const String getUser ="/api/v1/user/get_user/";
        static const String local_to_server = "/api/v1/dictation/re_upload/";
        //local_to_server
+    static const String foodPortion    ="/api/v1/user/identify-food/";
+        static const String foodnutrition   ="/api/v1/user/calculate-nutrition/";
+
      
 }

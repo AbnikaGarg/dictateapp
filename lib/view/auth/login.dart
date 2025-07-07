@@ -33,8 +33,9 @@ class LoginWidget extends StatelessWidget {
                 ),
 
                 Image.asset(
-                  "assets/images/Logo.jpg",
-                  height: 200,
+                  "assets/images/logo2.png",
+                  height: 150,width: 150,
+                  fit: BoxFit.cover,
                 ),
                 // SizedBox(
                 //   height: getProportionateScreenHeight(12),

@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
 // import 'package:record/record.dart';
+import 'package:audio_session/audio_session.dart';
+
 import 'package:speechtotext/models/DictationsDataModel.dart';
 import 'package:speechtotext/view/home/file_review.dart';
 import 'package:intl/intl.dart';
@@ -24,7 +26,7 @@ class Recordcontroller extends GetxController {
   final AudioPlayer audioPlayer = AudioPlayer(handleInterruptions: false);
 
   final FlutterSoundRecorder recorder = FlutterSoundRecorder();
-  final FlutterSoundPlayer flutterplayer = FlutterSoundPlayer();
+  //final FlutterSoundPlayer flutterplayer = FlutterSoundPlayer();
   // static const platform = MethodChannel('com.yourapp/call');
 
   bool isRecording = false;
@@ -47,7 +49,7 @@ class Recordcontroller extends GetxController {
   @override
   void dispose() {
     audioPlayer.dispose();
-    flutterplayer.closePlayer();
+    // flutterplayer.closePlayer();
     recorder.closeRecorder();
     timer?.cancel();
     amplitudeTimer?.cancel();
@@ -60,38 +62,38 @@ class Recordcontroller extends GetxController {
   // Future<void> _initializeRecorder() async {
   //   await recorder.();
   // }
-  void getAllDictations() async {
-    dictationsDataList.clear();
-    recordingSeconds = Duration.zero;
-    HomepageService().getDictations(1).then((value) {
-      switch (value.statusCode) {
-        case 200:
-          isLoaded = true;
-          final decodedData = jsonDecode(value.body);
+  // void getAllDictations() async {
+  //   dictationsDataList.clear();
+  //   recordingSeconds = Duration.zero;
+  //   HomepageService().getDictations(1).then((value) {
+  //     switch (value.statusCode) {
+  //       case 200:
+  //         isLoaded = true;
+  //         final decodedData = jsonDecode(value.body);
 
-          dictationsDataList.add(DictationsDataModel.fromJson(decodedData));
-          // if (dictationsDataList.isNotEmpty) {
-          //   if (dictationsDataList.first.data!.isNotEmpty) {
-          //     Future.delayed(Duration(milliseconds: 800), () {
-          //       setFile(dictationsDataList.first.data![0].dictationsdataUrl!);
-          //     });
-          //   }
-          // }
-          update();
-          break;
-        case 401:
-          //   Get.offAndToNamed("/login");
-          //DialogHelper.showErroDialog(description: "Token not valid");
-          break;
-        case 1:
-          break;
-        default:
-          break;
-      }
-    });
-  }
+  //         dictationsDataList.add(DictationsDataModel.fromJson(decodedData));
+  //         // if (dictationsDataList.isNotEmpty) {
+  //         //   if (dictationsDataList.first.data!.isNotEmpty) {
+  //         //     Future.delayed(Duration(milliseconds: 800), () {
+  //         //       setFile(dictationsDataList.first.data![0].dictationsdataUrl!);
+  //         //     });
+  //         //   }
+  //         // }
+  //         update();
+  //         break;
+  //       case 401:
+  //         //   Get.offAndToNamed("/login");
+  //         //DialogHelper.showErroDialog(description: "Token not valid");
+  //         break;
+  //       case 1:
+  //         break;
+  //       default:
+  //         break;
+  //     }
+  //   });
+  // }
 
-  double silenceThreshold = 2; //42; // Adjust based on testing (dB)
+  double silenceThreshold = 40; //42; // Adjust based on testing (dB)
   int silenceDuration = 2; // How many seconds before detecting silence
   int _silentTime = 0;
   bool isPlaying = false;
@@ -128,16 +130,18 @@ class Recordcontroller extends GetxController {
       //     );
 
       // Start recording and store the file path
-      flutterplayer.onProgress!.listen((event) {
-        recordingSeconds = event.position;
-        print("flutterplayer" + recordingSeconds.toString());
-        update();
-      });
+      // flutterplayer.onProgress!.listen((event) {
+      //   recordingSeconds = event.position;
+      //   print("flutterplayer" + recordingSeconds.toString());
+      //   update();
+      // });
 
       await recorder.startRecorder(
-        toFile: filePath, numChannels: 1,
+        toFile: filePath, numChannels: 2,
         sampleRate: 44100,
-        bitRate: 128000,
+        bitRate: 320000,
+        enableVoiceProcessing: true,
+
         //   bitRate: 128000,
         //   sampleRate: 44100,
 
@@ -145,6 +149,11 @@ class Recordcontroller extends GetxController {
         // bitRate: 32000, //128000,
         // numChannels: 1,
       );
+      timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
+        recordingSeconds += Duration(seconds: 1);
+        recorderController.refresh();
+        update();
+      });
 
       recorder.onProgress!.listen((evwnt) {
         currentPositionCurrent = evwnt.duration;
@@ -159,17 +168,30 @@ class Recordcontroller extends GetxController {
           _silentTime++;
           if (_silentTime >= silenceDuration) {
             isSilent = true;
-
-            pauseRecording();
-
+            update();
+            recorderController.pause();
+            // pauseRecording();
+            timer!.cancel();
             print("⏸ Paused due to silence");
           }
         } else {
+          //  recorderController.record();
           _silentTime = 0;
-          if (isPaused) {
-            resumeRecording();
-            print("▶ Resumed after silence");
+          isSilent = false;
+          // Restart the timer
+          if (!timer!.isActive) {
+            recorderController.record();
+            timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
+              recordingSeconds += Duration(seconds: 1);
+              recorderController.refresh();
+              update();
+            });
           }
+          update();
+          // if (isPaused) {
+          /// resumeRecording();
+          print("▶ Resumed after silence");
+          // }
         }
       });
       await recorder.setSubscriptionDuration(
@@ -180,11 +202,6 @@ class Recordcontroller extends GetxController {
       // flutterplayer.playerState
       update();
       // Start Timer (every second)
-      timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
-        recordingSeconds += Duration(seconds: 1);
-        recorderController.refresh();
-        update();
-      });
 
       //  Check for Silence Detection
       // final audioStream = await recorder.startStream(config);
@@ -291,6 +308,7 @@ class Recordcontroller extends GetxController {
     if (isRecording && isPaused) {
       await recorder.resumeRecorder();
       recorderController.record();
+      timer!.cancel;
       _silentTime = 0;
       isSilent = false;
       // Restart the timer
@@ -424,6 +442,12 @@ class Recordcontroller extends GetxController {
   }
 
   changeValueinDuration(seconds) {
+    if (!isPlaying) {
+      //   playerWaveformController.pausePlayer();
+
+      audioPlayer.play();
+      isPlaying = true;
+    }
     if (audioPlayer.playing) {
       isPlaying = true;
     }
@@ -448,10 +472,11 @@ class Recordcontroller extends GetxController {
   void onInit() {
     super.onInit();
     recorder.openRecorder();
-    flutterplayer.openPlayer();
+    // flutterplayer.openPlayer();
     // GetClose();
     scrollController = ScrollController();
     deleteAllLocalFiles();
+    checkAudioSession();
     audioPlayer.playerStateStream.listen((playerState) {
       if (playerState.processingState == ProcessingState.completed) {
         // countaa = countaa + 1;
@@ -474,13 +499,25 @@ class Recordcontroller extends GetxController {
     //   playerWaveformController.startPlayer();
     //   update();
     // }); // Triggers events every time when an audio file is finished playing.
-    checkAudioSession();
-    getAllDictations();
+    
+    // getAllDictations();
     checkPermission();
     getSetting();
     //  listofFiles();
+  //  _initAudioSession();
     print("dhn");
   }
+
+  late AudioSession session;
+
+  // Future<void> _initAudioSession() async {
+  //   session = await AudioSession.instance;
+  //   await session.configure(AudioSessionConfiguration(
+  //     avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
+  //     avAudioSessionCategoryOptions:
+  //         AVAudioSessionCategoryOptions.defaultToSpeaker,
+  //   ));
+  // }
 
   Future<void> checkAudioSession() async {
     try {
@@ -489,11 +526,11 @@ class Recordcontroller extends GetxController {
       // It's important to configure the session before doing anything else
       // Set the session to recording-compatible config
       await session.configure(const AudioSessionConfiguration(
-        avAudioSessionCategory: AVAudioSessionCategory.record,
+        avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
         avAudioSessionCategoryOptions:
-            AVAudioSessionCategoryOptions.allowBluetooth,
+            AVAudioSessionCategoryOptions.defaultToSpeaker,
         androidAudioAttributes: AndroidAudioAttributes(
-          contentType: AndroidAudioContentType.speech,
+          contentType: AndroidAudioContentType.music,
           usage: AndroidAudioUsage.voiceCommunication,
         ),
         androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
@@ -746,7 +783,7 @@ class Recordcontroller extends GetxController {
           //   Get.back();
           // });
 
-          getAllDictations();
+          //  getAllDictations();
           break;
         case 400:
           // if (value.data["detail"] == "User is not verified") {
@@ -804,10 +841,18 @@ class Recordcontroller extends GetxController {
             ),
             TextButton(
               onPressed: () async {
-                final file = File(filePath!);
+                final file = File(filePath);
                 if (await file.exists()) {
                   file.delete();
                 }
+                await recorder.stopRecorder();
+                recorderController.stop();
+                if (isPlaying) {
+                  audioPlayer.pause();
+                  isPlaying = false;
+                }
+                timer?.cancel();
+                amplitudeTimer?.cancel();
                 Get.offAll(DashboardScreen());
               },
               child: Text("Delete"),

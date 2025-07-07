@@ -223,13 +223,13 @@ class _HomeState extends State<Home> {
                             shrinkWrap: true,
                             primary: false,
                             itemBuilder: (context, index) {
-                              if (_controller.type == 0) {
-                                if (_controller.dictationsDataList.first
-                                        .data![index].is_local ==
-                                    false) {
-                                  return Container();
-                                }
-                              }
+                              // if (_controller.type == 0) {
+                              //   if (_controller.dictationsDataList.first
+                              //           .data![index].is_local ==
+                              //       false) {
+                              //     return Container();
+                              //   }
+                              // }
                               return buildFolderRow(
                                   context,
                                   index,

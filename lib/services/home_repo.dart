@@ -13,9 +13,14 @@ class HomepageService {
   final String noInternetMessage =
       'Connection to API server failed due to internet connection';
   Future<Response> getDictations(type) async {
-     var userid = PreferenceUtils.getString("userid");
-    var ur = Uri.parse(
-        AppUrls.BASE_URL + AppUrls.get_all_dictation + "?user_id=$userid&dictation_type=$type");
+    var userid = PreferenceUtils.getString("userid");
+    var ur = type == 0
+        ?Uri.parse(AppUrls.BASE_URL +
+            AppUrls.get_all_dictation +
+            "?user_id=$userid&dictation_type=2")
+        : Uri.parse(AppUrls.BASE_URL +
+            AppUrls.get_all_dictation +
+            "?user_id=$userid&dictation_type=$type");
     var token = PreferenceUtils.getUserToken();
     try {
       final response = await http.get(ur, headers: {

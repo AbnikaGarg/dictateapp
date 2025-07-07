@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:audio_session/audio_session.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:flutter/material.dart';
@@ -31,11 +32,11 @@ class HomepageController extends GetxController {
       // ));
     } else {
       Get.find<Recordcontroller>().checkPermission();
-      Get.find<Recordcontroller>().scrollController.animateTo(
-            0.0,
-            curve: Curves.easeOut,
-            duration: const Duration(milliseconds: 600),
-          );
+      // Get.find<Recordcontroller>().scrollController.animateTo(
+      //       0.0,
+      //       curve: Curves.easeOut,
+      //       duration: const Duration(milliseconds: 600),
+      //     );
       if (isPlaying) {
         audioPlayer.pause();
         isPlaying = false;
@@ -105,6 +106,7 @@ class HomepageController extends GetxController {
     update();
     //getAllFolders();
     //clearFiles();
+    //setupAudio() ;
     getAllFolders();
     getAllDictations(0);
     print("home");
@@ -203,6 +205,7 @@ class HomepageController extends GetxController {
     //   type = 0;
     // }
     dictationsDataList.clear();
+      isLoadedDic = false;update();
     HomepageService().getDictations(type == -1 ? 0 : type).then((value) {
       switch (value.statusCode) {
         case 200:
@@ -402,6 +405,10 @@ class HomepageController extends GetxController {
   List folders = [];
 
   void getAllFolders() async {
+      if (isPlaying) {
+        audioPlayer.pause();
+        isPlaying = false;
+      }
     folders.clear();
     HomepageService().getFolders().then((value) {
       switch (value.statusCode) {
@@ -449,6 +456,10 @@ class HomepageController extends GetxController {
   selectFoler(mainTitle, MainType) {
     title = mainTitle;
     type = MainType;
+      if (isPlaying) {
+        audioPlayer.pause();
+        isPlaying = false;
+      }
     Get.back();
     getAllDictations(type);
     update();

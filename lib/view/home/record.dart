@@ -50,15 +50,13 @@ class _AudioPageState extends State<AudioPage> {
                         fontSize: 16,
                         color: _controller.isRecording
                             ? AppTheme.primaryColor
-                            : AppTheme.textBlackColor),
+                            : Color.fromARGB(255, 21, 134, 6)),
                   ),
                 ),
               ),
             ),
             title: Text(
-              _controller.isPaused && _controller.isSilent
-                  ? "No Voice"
-                  : 'Dictation',
+              _controller.isSilent ? "No Voice" : 'Dictation',
               style: GoogleFonts.interTight(
                   fontWeight: FontWeight.w600, fontSize: 18),
             ),
@@ -98,7 +96,7 @@ class _AudioPageState extends State<AudioPage> {
                     )),
               ),
             ],
-            backgroundColor: _controller.isPaused && _controller.isSilent
+            backgroundColor: _controller.isSilent
                 ? Color.fromARGB(255, 244, 227, 76)
                 : AppTheme.whiteColor,
           ),
@@ -170,26 +168,29 @@ class _AudioPageState extends State<AudioPage> {
               : Container(),
           body: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 20),
-            child: SingleChildScrollView(
-              controller: _controller.scrollController,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    _controller.isRecording
-                        ? "Recording: ${formatDuration(_controller.recordingSeconds)} sec"
-                        : "Start Recording",
-                    style: GoogleFonts.inter(
-                        fontSize: 16, fontWeight: FontWeight.w500),
-                  ),
-                  const SizedBox(height: 20),
-                  Container(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                // Text(
+                //   _controller.isRecording
+                //       ? "Recording: ${formatDuration(_controller.recordingSeconds)} sec"
+                //       : "Start Recording",
+                //   style: GoogleFonts.inter(
+                //       fontSize: 16, fontWeight: FontWeight.w500),
+                // ),
+                // const SizedBox(height: 20),
+                Expanded(
+                  child: Container(
                     decoration: BoxDecoration(
                       color: const Color.fromARGB(255, 218, 232, 225),
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        width: 1,
+                        color: Color.fromARGB(207, 0, 0, 0),
+                      ),
                       boxShadow: const [
                         BoxShadow(
-                            color: Color.fromARGB(17, 0, 0, 0),
+                            color: Color.fromARGB(17, 77, 76, 76),
                             blurRadius: 12,
                             spreadRadius: 2,
                             offset: Offset(1, 1)),
@@ -197,23 +198,42 @@ class _AudioPageState extends State<AudioPage> {
                     ),
                     child: Column(
                       children: [
+                        SizedBox(height: 20,),
                         AudioWaveforms(
                           enableGesture: true,
                           shouldCalculateScrolledPosition: true,
-                          size: Size(MediaQuery.of(context).size.width, 150),
+                          size: Size(MediaQuery.of(context).size.width, 120),
                           recorderController: _controller.recorderController,
                           waveStyle: const WaveStyle(
-                            scaleFactor: 90,
-                            waveColor: Colors.black,
+                            scaleFactor: 60,
+                            waveColor: Color.fromARGB(255, 30, 91, 157),
                             extendWaveform: true,
+                            spacing: 7,
                             middleLineColor: Colors.blue,
                             showMiddleLine: false,
                             showTop: true,
-                            waveCap: StrokeCap.round,
+                            waveThickness: 3,
+                            waveCap: StrokeCap.butt,
                           ),
                           padding: const EdgeInsets.only(left: 18),
                           margin: const EdgeInsets.symmetric(horizontal: 15),
                         ),
+                        SizedBox(height: 20),
+
+                        Text(
+                          _controller.isPaused && !_controller.isSilent
+                              ? "⏸ Recording Paused"
+                              : _controller.isSilent
+                                  ? "⏸ Recording Paused (Silence Detected)"
+                                  : "🎙 Recording: ${formatDuration(_controller.recordingSeconds)} sec",
+                          style: TextStyle(
+                              fontSize: 18,
+                              color: _controller.isSilent
+                                  ? const Color.fromARGB(255, 212, 196, 56)
+                                  : AppTheme.black,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(height: 20),
                         Padding(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 20, vertical: 10),
@@ -221,7 +241,8 @@ class _AudioPageState extends State<AudioPage> {
                                 SizedBox(height: 20),
                                 SliderTheme(
                                   data: SliderThemeData(
-                                    activeTrackColor: Colors.blue, // Customize as needed,
+                                    activeTrackColor:
+                                        Colors.blue, // Customize as needed,
                                     trackHeight: 3,
                                     thumbShape: VerticalBarThumbShape(
                                       width: 3,
@@ -237,9 +258,9 @@ class _AudioPageState extends State<AudioPage> {
                                     width: double.infinity,
                                     child: Slider(
                                       max: _controller.max.value,
-                                      
                                       value: _controller.slidervalue.value,
-                                      inactiveColor: const Color.fromARGB(255, 180, 183, 180),
+                                      inactiveColor: const Color.fromARGB(
+                                          255, 180, 183, 180),
                                       onChanged: (value) {
                                         value = value;
                                         _controller.changeValueinDuration(
@@ -264,7 +285,7 @@ class _AudioPageState extends State<AudioPage> {
                                           fontWeight: FontWeight.w500),
                                     ),
                                     Text(
-                                      _controller.duration.value,
+                                      formatDuration(_controller.recordingSeconds),
                                       style: GoogleFonts.poppins(
                                           fontSize: 12,
                                           height: 0,
@@ -273,216 +294,58 @@ class _AudioPageState extends State<AudioPage> {
                                     ),
                                   ],
                                 ),
-                                
                               ])),
                         ),
-                         SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                _controller.skip5SecondsBackward();
-                              },
-                              child: Icon(
-                                Icons.fast_rewind,
-                                color: AppTheme.lightText,
-                                size: 40,
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                if (_controller.isRecording &&
-                                    _controller.isPaused) {
-                                  _controller.pausePlaySong();
-                                }
-                              },
-                              child: Container(
-                                padding: EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                    color: AppTheme.lightText,
-                                    shape: BoxShape.circle),
-                                child: Icon(
-                                  !_controller.isPlaying == false
-                                      ? Icons.pause
-                                      : Icons.play_arrow,
-                                  size: 30,
-                                  color: AppTheme.whiteColor,
-                                ),
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                _controller.skip5SecondsForward();
-                              },
-                              child: Icon(
-                                Icons.fast_forward,
-                                color: AppTheme.lightText,
-                                size: 40,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 20),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    _controller.isPaused && !_controller.isSilent
-                        ? "⏸ Recording Paused"
-                        : _controller.isPaused && _controller.isSilent
-                            ? "⏸ Recording Paused (Silence Detected)"
-                            : "🎙 Recording: ${formatDuration(_controller.recordingSeconds)} sec",
-                    style: TextStyle(
-                        fontSize: 18,
-                        color: _controller.isSilent
-                            ? const Color.fromARGB(255, 212, 196, 56)
-                            : AppTheme.black,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 20),
-                  //   Spacer(),
-                  //  if (_controller.isRecording && _controller.isPaused)
-                  // Container(
-                  //   padding: EdgeInsets.symmetric(
-                  //     vertical: 14,
-                  //   ),
-                  //   decoration: BoxDecoration(
-                  //     color: AppTheme.whiteColor,
-                  //     borderRadius: BorderRadius.circular(12),
-                  //     boxShadow: const [
-                  //       BoxShadow(
-                  //           color: Color.fromARGB(17, 0, 0, 0),
-                  //           blurRadius: 12,
-                  //           spreadRadius: 2,
-                  //           offset: Offset(1, 1)),
-                  //     ],
-                  //   ),
-                  //   child: Column(
-                  //     children: [
-                  //       // SizedBox(height: 20),
-                  //       // SliderTheme(
-                  //       //   data: const SliderThemeData(
-                  //       //     trackHeight: 4,
-                  //       //     rangeThumbShape: RoundRangeSliderThumbShape(
-                  //       //       enabledThumbRadius: 8,
-                  //       //       disabledThumbRadius: 5,
-                  //       //     ),
-                  //       //     overlayShape: RoundSliderOverlayShape(
-                  //       //       overlayRadius: 4,
-                  //       //     ),
-                  //       //     activeTickMarkColor: Colors.transparent,
-                  //       //     inactiveTickMarkColor: Colors.transparent,
-                  //       //   ),
-                  //       //   child: SizedBox(
-                  //       //     width: double.infinity,
-                  //       //     child: Slider(
-                  //       //       max: _controller.max.value,
-                  //       //       value: _controller.slidervalue.value,
-                  //       //       onChanged: (value) {
-                  //       //         value = value;
-                  //       //         _controller
-                  //       //             .changeValueinDuration(value.toInt());
-                  //       //       },
-                  //       //       min: 0,
-                  //       //       label: "2",
-                  //       //     ),
-                  //       //   ),
-                  //       // ),
-                  //       // SizedBox(height: 3),
-                  //       // Row(
-                  //       //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //       //   children: [
-                  //       //     Text(
-                  //       //       _controller.postion.value,
-                  //       //       style: GoogleFonts.poppins(
-                  //       //           fontSize: 12,
-                  //       //           height: 0,
-                  //       //           color: AppTheme.lightText,
-                  //       //           fontWeight: FontWeight.w500),
-                  //       //     ),
-                  //       //     Text(
-                  //       //       _controller.duration.value,
-                  //       //       style: GoogleFonts.poppins(
-                  //       //           fontSize: 12,
-                  //       //           height: 0,
-                  //       //           color: AppTheme.lightText,
-                  //       //           fontWeight: FontWeight.w500),
-                  //       //     ),
-                  //       //   ],
-                  //       // ),
-                  //       SizedBox(height: 8),
-                  //       Row(
-                  //         mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  //         crossAxisAlignment: CrossAxisAlignment.center,
-                  //         children: [
-                  //           GestureDetector(
-                  //             onTap: () {
-                  //               _controller.skip5SecondsBackward();
-                  //             },
-                  //             child: Icon(
-                  //               Icons.fast_rewind,
-                  //               color: AppTheme.lightText,
-                  //               size: 40,
-                  //             ),
-                  //           ),
-                  //           GestureDetector(
-                  //             onTap: () {
-                  //               if (_controller.isRecording &&
-                  //                   _controller.isPaused) {
-                  //                 _controller.pausePlaySong();
-                  //               }
-                  //             },
-                  //             child: Container(
-                  //               padding: EdgeInsets.all(10),
-                  //               decoration: BoxDecoration(
-                  //                   color: AppTheme.lightText,
-                  //                   shape: BoxShape.circle),
-                  //               child: Icon(
-                  //                 !_controller.isPlaying == false
-                  //                     ? Icons.pause
-                  //                     : Icons.play_arrow,
-                  //                 size: 30,
-                  //                 color: AppTheme.whiteColor,
-                  //               ),
-                  //             ),
-                  //           ),
-                  //           GestureDetector(
-                  //             onTap: () {
-                  //               _controller.skip5SecondsForward();
-                  //             },
-                  //             child: Icon(
-                  //               Icons.fast_forward,
-                  //               color: AppTheme.lightText,
-                  //               size: 40,
-                  //             ),
-                  //           ),
-                  //         ],
-                  //       ),
-                  //       SizedBox(height: 8),
-                  //     ],
-                  //   ),
-                  // ),
-                  // // if (_controller.isRecording && _controller.isPaused)
-                  // SizedBox(height: 20),
+                        SizedBox(height: 8),
+                        // Row(
+                        //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        //   crossAxisAlignment: CrossAxisAlignment.center,
+                        //   children: [
+                        //     GestureDetector(
+                        //       onTap: () {
+                        //         _controller.skip5SecondsBackward();
+                        //       },
+                        //       child: Icon(
+                        //         Icons.fast_rewind,
+                        //         color: AppTheme.black,
+                        //         size: 40,
+                        //       ),
+                        //     ),
+                        //     GestureDetector(
+                        //       onTap: () {
+                        //         if (_controller.isRecording &&
+                        //             _controller.isPaused) {
+                        //           _controller.pausePlaySong();
+                        //         }
+                        //       },
+                        //       child: Container(
+                        //         padding: EdgeInsets.all(10),
+                        //         decoration: BoxDecoration(
+                        //             color: AppTheme.black,
+                        //             shape: BoxShape.circle),
+                        //         child: Icon(
+                        //           !_controller.isPlaying == false
+                        //               ? Icons.pause
+                        //               : Icons.play_arrow,
+                        //           size: 30,
+                        //           color: AppTheme.whiteColor,
+                        //         ),
+                        //       ),
+                        //     ),
+                        //     GestureDetector(
+                        //       onTap: () {
+                        //         _controller.skip5SecondsForward();
+                        //       },
+                        //       child: Icon(
+                        //         Icons.fast_forward,
+                        //         color: AppTheme.black,
+                        //         size: 40,
+                        //       ),
+                        //     ),
+                        //   ],
+                        // ),
 
-                  Container(
-                    padding: EdgeInsets.symmetric(vertical: 14),
-                    decoration: BoxDecoration(
-                      color: AppTheme.whiteColor,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: const [
-                        BoxShadow(
-                            color: Color.fromARGB(17, 0, 0, 0),
-                            blurRadius: 12,
-                            spreadRadius: 2,
-                            offset: Offset(1, 1)),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
+                        const SizedBox(height: 30),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -509,6 +372,7 @@ class _AudioPageState extends State<AudioPage> {
                               ),
                             ),
                             // GestureDetector(
+                            //
                             //   onTap: () {
                             //     if (!_controller.isRecording) {
                             //       _controller.startRecording();
@@ -548,7 +412,7 @@ class _AudioPageState extends State<AudioPage> {
                               child: Container(
                                 padding: EdgeInsets.all(22),
                                 decoration: BoxDecoration(
-                                    color: Colors.red, shape: BoxShape.circle),
+                                    color: _controller.isSilent?Color.fromARGB(255, 231, 214, 61): Colors.red, shape: BoxShape.circle),
                                 child: Icon(
                                   !_controller.isPaused &&
                                           _controller.isRecording
@@ -582,6 +446,7 @@ class _AudioPageState extends State<AudioPage> {
                             ),
                           ],
                         ),
+                        Spacer(),
                         if (!_controller.isSaved)
                           Padding(
                             padding: const EdgeInsets.only(top: 20),
@@ -637,253 +502,382 @@ class _AudioPageState extends State<AudioPage> {
                                 ],
                               ),
                             ),
-                          )
+                          ),
+                        SizedBox(height: 20),
                       ],
                     ),
                   ),
-                  SizedBox(height: 20),
-                  // PolygonWaveform(
-                  //   samples: [],
-                  //   height: 300,
-                  //   width: double.infinity,
-                  //   //  maxDuration: _controller.max,
-                  //   //  elapsedDuration: elapsedDuration,
-                  // )
-                  // if (_controller.filePath != "") const SizedBox(height: 20),
-                  // if (_controller.filePath != "")
-                  //   Container(
-                  //     padding:
-                  //         EdgeInsets.symmetric(vertical: 14, horizontal: 14),
-                  //     decoration: BoxDecoration(
-                  //       color: AppTheme.whiteColor,
-                  //       borderRadius: BorderRadius.circular(12),
-                  //       boxShadow: const [
-                  //         BoxShadow(
-                  //             color: Color.fromARGB(17, 0, 0, 0),
-                  //             blurRadius: 12,
-                  //             spreadRadius: 2,
-                  //             offset: Offset(1, 1)),
-                  //       ],
-                  //     ),
-                  //     width: double.infinity,
-                  //     child: Column(
-                  //       children: [
-                  //         Obx(
-                  //           () => Column(
-                  //             children: [
-                  //               const SizedBox(height: 20),
-                  //               Text(
-                  //                 _controller.fileName!,
-                  //                 style: GoogleFonts.inter(
-                  //                     color: AppTheme.black,
-                  //                     fontSize: 16,
-                  //                     fontWeight: FontWeight.w500),
-                  //                 textAlign: TextAlign.center,
-                  //               ),
-                  //               SizedBox(height: 10),
-                  //               SliderTheme(
-                  //                 data: const SliderThemeData(
-                  //                   trackHeight: 4,
-                  //                   rangeThumbShape: RoundRangeSliderThumbShape(
-                  //                     enabledThumbRadius: 8,
-                  //                     disabledThumbRadius: 5,
-                  //                   ),
-                  //                   overlayShape: RoundSliderOverlayShape(
-                  //                     overlayRadius: 4,
-                  //                   ),
-                  //                   activeTickMarkColor: Colors.transparent,
-                  //                   inactiveTickMarkColor: Colors.transparent,
-                  //                 ),
-                  //                 child: SizedBox(
-                  //                   width: double.infinity,
-                  //                   child: Slider(
-                  //                     max: controller.max.value,
-                  //                     value: controller.slidervalue.value,
-                  //                     onChanged: (value) {
-                  //                       value = value;
-                  //                       controller.changeValueinDuration(
-                  //                           value.toInt());
-                  //                     },
-                  //                     min: 0,
-                  //                     label: "2",
-                  //                   ),
-                  //                 ),
-                  //               ),
-                  //               SizedBox(height: 3),
-                  //               Row(
-                  //                 mainAxisAlignment:
-                  //                     MainAxisAlignment.spaceBetween,
-                  //                 children: [
-                  //                   Text(
-                  //                     controller.postion.value,
-                  //                     style: GoogleFonts.poppins(
-                  //                         fontSize: 12,
-                  //                         height: 0,
-                  //                         color: AppTheme.lightText,
-                  //                         fontWeight: FontWeight.w500),
-                  //                   ),
-                  //                   Text(
-                  //                     controller.duration.value,
-                  //                     style: GoogleFonts.poppins(
-                  //                         fontSize: 12,
-                  //                         height: 0,
-                  //                         color: AppTheme.lightText,
-                  //                         fontWeight: FontWeight.w500),
-                  //                   ),
-                  //                 ],
-                  //               ),
-                  //               Row(
-                  //                 mainAxisAlignment:
-                  //                     MainAxisAlignment.spaceEvenly,
-                  //                 crossAxisAlignment: CrossAxisAlignment.center,
-                  //                 children: [
-                  //                   GestureDetector(
-                  //                     onTap: () {
-                  //                       controller.skip5SecondsBackward();
-                  //                     },
-                  //                     child: Icon(
-                  //                       Icons.fast_rewind,
-                  //                       color: AppTheme.lightText,
-                  //                       size: 30,
-                  //                     ),
-                  //                   ),
-                  //                   GestureDetector(
-                  //                     onTap: () {
-                  //                       _controller.startPartialREcord();
-                  //                     },
-                  //                     child: Container(
-                  //                       padding: EdgeInsets.all(6),
-                  //                       decoration: BoxDecoration(
-                  //                           color: AppTheme.lightText,
-                  //                           shape: BoxShape.circle),
-                  //                       child: Icon(
-                  //                         !controller.isPlaying == false
-                  //                             ? Icons.pause
-                  //                             : Icons.play_arrow,
-                  //                         size: 22,
-                  //                         color: AppTheme.whiteColor,
-                  //                       ),
-                  //                     ),
-                  //                   ),
-                  //                   GestureDetector(
-                  //                     onTap: () {
-                  //                       controller.skip5SecondsForward();
-                  //                     },
-                  //                     child: Icon(
-                  //                       Icons.fast_forward,
-                  //                       color: AppTheme.lightText,
-                  //                       size: 30,
-                  //                     ),
-                  //                   ),
-                  //                 ],
-                  //               ),
-                  //               SizedBox(height: 8),
-                  //             ],
-                  //           ),
-                  //         ),
-                  //         SizedBox(height: 10),
-                  //         Row(
-                  //           children: [
-                  //             Expanded(
-                  //               child: InkWell(
-                  //                 onTap: () {
-                  //                   controller.saveLocalRecording(
-                  //                     _controller.filePath,
-                  //                     _controller.fileName,
-                  //                   );
-                  //                 },
-                  //                 child: Container(
-                  //                   height: 45,
-                  //                   margin:
-                  //                       EdgeInsets.symmetric(horizontal: 10),
-                  //                   alignment: Alignment.center,
-                  //                   decoration: BoxDecoration(
-                  //                       color: AppTheme.primaryColor,
-                  //                       borderRadius:
-                  //                           BorderRadius.circular(50)),
-                  //                   child: Text(
-                  //                     "Upload",
-                  //                     style: GoogleFonts.inter(
-                  //                         fontSize: 16,
-                  //                         fontWeight: FontWeight.w600,
-                  //                         color: AppTheme.whiteColor),
-                  //                   ),
-                  //                 ),
-                  //               ),
-                  //             ),
-                  //             Expanded(
-                  //               child: InkWell(
-                  //                 onTap: () {
-                  //                   controller.deleteLocalFile(
-                  //                     _controller.filePath,
-                  //                   );
-                  //                 },
-                  //                 child: Container(
-                  //                   height: 45,
-                  //                   margin:
-                  //                       EdgeInsets.symmetric(horizontal: 10),
-                  //                   alignment: Alignment.center,
-                  //                   decoration: BoxDecoration(
-                  //                       color: Colors.red,
-                  //                       borderRadius:
-                  //                           BorderRadius.circular(50)),
-                  //                   child: Text(
-                  //                     "Delete",
-                  //                     style: GoogleFonts.inter(
-                  //                         fontSize: 16,
-                  //                         fontWeight: FontWeight.w600,
-                  //                         color: AppTheme.whiteColor),
-                  //                   ),
-                  //                 ),
-                  //               ),
-                  //             ),
-                  //           ],
-                  //         ),
-                  //       ],
-                  //     ),
-                  //   ),
-                  // const SizedBox(height: 20),
-                  ///if (_controller.filePath == "")
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //   children: [
-                  //     Text(
-                  //       "Recent Dictations",
-                  //       style: GoogleFonts.inter(
-                  //           color: AppTheme.black,
-                  //           fontSize: 16,
-                  //           fontWeight: FontWeight.w600),
-                  //     ),
-                  //   ],
-                  // ),
-                  // SizedBox(
-                  //   height: 5,
-                  // ),
-                  // // if (_controller.filePath == "")
-                  // !_controller.isLoaded
-                  //     ? Center(
-                  //         child: CircularProgressIndicator(),
-                  //       )
-                  //     : (_controller.dictationsDataList.isNotEmpty)
-                  //         ? ListView.builder(
-                  //             itemCount: _controller
-                  //                 .dictationsDataList.first.data!.length,
-                  //             shrinkWrap: true,
-                  //             primary: false,
-                  //             itemBuilder: (context, index) {
-                  //               return buildFolderRow(
-                  //                   context,
-                  //                   index,
-                  //                   _controller
-                  //                       .dictationsDataList.first.data![index],
-                  //                   _controller);
-                  //             },
-                  //           )
-                  //         : Center(
-                  //             child: Text("No Data"),
-                  //           )
-                ],
-              ),
+                ),
+                SizedBox(
+                  height: 50,
+                )
+
+                //   Spacer(),
+                //  if (_controller.isRecording && _controller.isPaused)
+                // Container(
+                //   padding: EdgeInsets.symmetric(
+                //     vertical: 14,
+                //   ),
+                //   decoration: BoxDecoration(
+                //     color: AppTheme.whiteColor,
+                //     borderRadius: BorderRadius.circular(12),
+                //     boxShadow: const [
+                //       BoxShadow(
+                //           color: Color.fromARGB(17, 0, 0, 0),
+                //           blurRadius: 12,
+                //           spreadRadius: 2,
+                //           offset: Offset(1, 1)),
+                //     ],
+                //   ),
+                //   child: Column(
+                //     children: [
+                //       // SizedBox(height: 20),
+                //       // SliderTheme(
+                //       //   data: const SliderThemeData(
+                //       //     trackHeight: 4,
+                //       //     rangeThumbShape: RoundRangeSliderThumbShape(
+                //       //       enabledThumbRadius: 8,
+                //       //       disabledThumbRadius: 5,
+                //       //     ),
+                //       //     overlayShape: RoundSliderOverlayShape(
+                //       //       overlayRadius: 4,
+                //       //     ),
+                //       //     activeTickMarkColor: Colors.transparent,
+                //       //     inactiveTickMarkColor: Colors.transparent,
+                //       //   ),
+                //       //   child: SizedBox(
+                //       //     width: double.infinity,
+                //       //     child: Slider(
+                //       //       max: _controller.max.value,
+                //       //       value: _controller.slidervalue.value,
+                //       //       onChanged: (value) {
+                //       //         value = value;
+                //       //         _controller
+                //       //             .changeValueinDuration(value.toInt());
+                //       //       },
+                //       //       min: 0,
+                //       //       label: "2",
+                //       //     ),
+                //       //   ),
+                //       // ),
+                //       // SizedBox(height: 3),
+                //       // Row(
+                //       //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //       //   children: [
+                //       //     Text(
+                //       //       _controller.postion.value,
+                //       //       style: GoogleFonts.poppins(
+                //       //           fontSize: 12,
+                //       //           height: 0,
+                //       //           color: AppTheme.lightText,
+                //       //           fontWeight: FontWeight.w500),
+                //       //     ),
+                //       //     Text(
+                //       //       _controller.duration.value,
+                //       //       style: GoogleFonts.poppins(
+                //       //           fontSize: 12,
+                //       //           height: 0,
+                //       //           color: AppTheme.lightText,
+                //       //           fontWeight: FontWeight.w500),
+                //       //     ),
+                //       //   ],
+                //       // ),
+                //       SizedBox(height: 8),
+                //       Row(
+                //         mainAxisAlignment: MainAxisAlignment.spaceAround,
+                //         crossAxisAlignment: CrossAxisAlignment.center,
+                //         children: [
+                //           GestureDetector(
+                //             onTap: () {
+                //               _controller.skip5SecondsBackward();
+                //             },
+                //             child: Icon(
+                //               Icons.fast_rewind,
+                //               color: AppTheme.lightText,
+                //               size: 40,
+                //             ),
+                //           ),
+                //           GestureDetector(
+                //             onTap: () {
+                //               if (_controller.isRecording &&
+                //                   _controller.isPaused) {
+                //                 _controller.pausePlaySong();
+                //               }
+                //             },
+                //             child: Container(
+                //               padding: EdgeInsets.all(10),
+                //               decoration: BoxDecoration(
+                //                   color: AppTheme.lightText,
+                //                   shape: BoxShape.circle),
+                //               child: Icon(
+                //                 !_controller.isPlaying == false
+                //                     ? Icons.pause
+                //                     : Icons.play_arrow,
+                //                 size: 30,
+                //                 color: AppTheme.whiteColor,
+                //               ),
+                //             ),
+                //           ),
+                //           GestureDetector(
+                //             onTap: () {
+                //               _controller.skip5SecondsForward();
+                //             },
+                //             child: Icon(
+                //               Icons.fast_forward,
+                //               color: AppTheme.lightText,
+                //               size: 40,
+                //             ),
+                //           ),
+                //         ],
+                //       ),
+                //       SizedBox(height: 8),
+                //     ],
+                //   ),
+                // ),
+                // // if (_controller.isRecording && _controller.isPaused)
+                // SizedBox(height: 20),
+
+                // PolygonWaveform(
+                //   samples: [],
+                //   height: 300,
+                //   width: double.infinity,
+                //   //  maxDuration: _controller.max,
+                //   //  elapsedDuration: elapsedDuration,
+                // )
+                // if (_controller.filePath != "") const SizedBox(height: 20),
+                // if (_controller.filePath != "")
+                //   Container(
+                //     padding:
+                //         EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+                //     decoration: BoxDecoration(
+                //       color: AppTheme.whiteColor,
+                //       borderRadius: BorderRadius.circular(12),
+                //       boxShadow: const [
+                //         BoxShadow(
+                //             color: Color.fromARGB(17, 0, 0, 0),
+                //             blurRadius: 12,
+                //             spreadRadius: 2,
+                //             offset: Offset(1, 1)),
+                //       ],
+                //     ),
+                //     width: double.infinity,
+                //     child: Column(
+                //       children: [
+                //         Obx(
+                //           () => Column(
+                //             children: [
+                //               const SizedBox(height: 20),
+                //               Text(
+                //                 _controller.fileName!,
+                //                 style: GoogleFonts.inter(
+                //                     color: AppTheme.black,
+                //                     fontSize: 16,
+                //                     fontWeight: FontWeight.w500),
+                //                 textAlign: TextAlign.center,
+                //               ),
+                //               SizedBox(height: 10),
+                //               SliderTheme(
+                //                 data: const SliderThemeData(
+                //                   trackHeight: 4,
+                //                   rangeThumbShape: RoundRangeSliderThumbShape(
+                //                     enabledThumbRadius: 8,
+                //                     disabledThumbRadius: 5,
+                //                   ),
+                //                   overlayShape: RoundSliderOverlayShape(
+                //                     overlayRadius: 4,
+                //                   ),
+                //                   activeTickMarkColor: Colors.transparent,
+                //                   inactiveTickMarkColor: Colors.transparent,
+                //                 ),
+                //                 child: SizedBox(
+                //                   width: double.infinity,
+                //                   child: Slider(
+                //                     max: controller.max.value,
+                //                     value: controller.slidervalue.value,
+                //                     onChanged: (value) {
+                //                       value = value;
+                //                       controller.changeValueinDuration(
+                //                           value.toInt());
+                //                     },
+                //                     min: 0,
+                //                     label: "2",
+                //                   ),
+                //                 ),
+                //               ),
+                //               SizedBox(height: 3),
+                //               Row(
+                //                 mainAxisAlignment:
+                //                     MainAxisAlignment.spaceBetween,
+                //                 children: [
+                //                   Text(
+                //                     controller.postion.value,
+                //                     style: GoogleFonts.poppins(
+                //                         fontSize: 12,
+                //                         height: 0,
+                //                         color: AppTheme.lightText,
+                //                         fontWeight: FontWeight.w500),
+                //                   ),
+                //                   Text(
+                //                     controller.duration.value,
+                //                     style: GoogleFonts.poppins(
+                //                         fontSize: 12,
+                //                         height: 0,
+                //                         color: AppTheme.lightText,
+                //                         fontWeight: FontWeight.w500),
+                //                   ),
+                //                 ],
+                //               ),
+                //               Row(
+                //                 mainAxisAlignment:
+                //                     MainAxisAlignment.spaceEvenly,
+                //                 crossAxisAlignment: CrossAxisAlignment.center,
+                //                 children: [
+                //                   GestureDetector(
+                //                     onTap: () {
+                //                       controller.skip5SecondsBackward();
+                //                     },
+                //                     child: Icon(
+                //                       Icons.fast_rewind,
+                //                       color: AppTheme.lightText,
+                //                       size: 30,
+                //                     ),
+                //                   ),
+                //                   GestureDetector(
+                //                     onTap: () {
+                //                       _controller.startPartialREcord();
+                //                     },
+                //                     child: Container(
+                //                       padding: EdgeInsets.all(6),
+                //                       decoration: BoxDecoration(
+                //                           color: AppTheme.lightText,
+                //                           shape: BoxShape.circle),
+                //                       child: Icon(
+                //                         !controller.isPlaying == false
+                //                             ? Icons.pause
+                //                             : Icons.play_arrow,
+                //                         size: 22,
+                //                         color: AppTheme.whiteColor,
+                //                       ),
+                //                     ),
+                //                   ),
+                //                   GestureDetector(
+                //                     onTap: () {
+                //                       controller.skip5SecondsForward();
+                //                     },
+                //                     child: Icon(
+                //                       Icons.fast_forward,
+                //                       color: AppTheme.lightText,
+                //                       size: 30,
+                //                     ),
+                //                   ),
+                //                 ],
+                //               ),
+                //               SizedBox(height: 8),
+                //             ],
+                //           ),
+                //         ),
+                //         SizedBox(height: 10),
+                //         Row(
+                //           children: [
+                //             Expanded(
+                //               child: InkWell(
+                //                 onTap: () {
+                //                   controller.saveLocalRecording(
+                //                     _controller.filePath,
+                //                     _controller.fileName,
+                //                   );
+                //                 },
+                //                 child: Container(
+                //                   height: 45,
+                //                   margin:
+                //                       EdgeInsets.symmetric(horizontal: 10),
+                //                   alignment: Alignment.center,
+                //                   decoration: BoxDecoration(
+                //                       color: AppTheme.primaryColor,
+                //                       borderRadius:
+                //                           BorderRadius.circular(50)),
+                //                   child: Text(
+                //                     "Upload",
+                //                     style: GoogleFonts.inter(
+                //                         fontSize: 16,
+                //                         fontWeight: FontWeight.w600,
+                //                         color: AppTheme.whiteColor),
+                //                   ),
+                //                 ),
+                //               ),
+                //             ),
+                //             Expanded(
+                //               child: InkWell(
+                //                 onTap: () {
+                //                   controller.deleteLocalFile(
+                //                     _controller.filePath,
+                //                   );
+                //                 },
+                //                 child: Container(
+                //                   height: 45,
+                //                   margin:
+                //                       EdgeInsets.symmetric(horizontal: 10),
+                //                   alignment: Alignment.center,
+                //                   decoration: BoxDecoration(
+                //                       color: Colors.red,
+                //                       borderRadius:
+                //                           BorderRadius.circular(50)),
+                //                   child: Text(
+                //                     "Delete",
+                //                     style: GoogleFonts.inter(
+                //                         fontSize: 16,
+                //                         fontWeight: FontWeight.w600,
+                //                         color: AppTheme.whiteColor),
+                //                   ),
+                //                 ),
+                //               ),
+                //             ),
+                //           ],
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // const SizedBox(height: 20),
+                ///if (_controller.filePath == "")
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //   children: [
+                //     Text(
+                //       "Recent Dictations",
+                //       style: GoogleFonts.inter(
+                //           color: AppTheme.black,
+                //           fontSize: 16,
+                //           fontWeight: FontWeight.w600),
+                //     ),
+                //   ],
+                // ),
+                // SizedBox(
+                //   height: 5,
+                // ),
+                // // if (_controller.filePath == "")
+                // !_controller.isLoaded
+                //     ? Center(
+                //         child: CircularProgressIndicator(),
+                //       )
+                //     : (_controller.dictationsDataList.isNotEmpty)
+                //         ? ListView.builder(
+                //             itemCount: _controller
+                //                 .dictationsDataList.first.data!.length,
+                //             shrinkWrap: true,
+                //             primary: false,
+                //             itemBuilder: (context, index) {
+                //               return buildFolderRow(
+                //                   context,
+                //                   index,
+                //                   _controller
+                //                       .dictationsDataList.first.data![index],
+                //                   _controller);
+                //             },
+                //           )
+                //         : Center(
+                //             child: Text("No Data"),
+                //           )
+              ],
             ),
           ));
     });

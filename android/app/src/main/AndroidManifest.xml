@@ -9,11 +9,13 @@
 <!-- Optional: Add this permission if you want to save your recordings in public folders -->
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <application
-        android:label="Pilottech Speech"
+        android:label="Pilot Stella"
         android:name="${applicationName}"
          android:requestLegacyExternalStorage="true"
         android:usesCleartextTraffic="true" 
+        android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/launcher_icon">
+        
         <activity
             android:name=".MainActivity"
             android:exported="true"

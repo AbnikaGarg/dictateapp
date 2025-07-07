@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.example.speechtotext"
     compileSdk = 35
-     buildToolsVersion = "35.0.0"
+    buildToolsVersion = "34.0.0"
     ndkVersion = flutter.ndkVersion
  packagingOptions {
         pickFirst 'lib/x86/libc++_shared.so'

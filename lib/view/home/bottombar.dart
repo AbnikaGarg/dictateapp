@@ -19,7 +19,7 @@ class DashboardScreen extends StatelessWidget {
 
   List bottomItems = [
     {"title": "Dictations", "svg": Icons.mic_none_rounded},
-    {"title": "Dictate", "svg": Icons.voicemail_rounded},
+    {"title": "Folder", "svg": Icons.folder_copy_outlined},
     {"title": "Settings", "svg": CupertinoIcons.settings}
   ];
 
@@ -54,14 +54,14 @@ class DashboardScreen extends StatelessWidget {
             horizontal: 3,
           ),
           decoration: BoxDecoration(
-              boxShadow: const [
-                BoxShadow(
-                    color: Color.fromARGB(17, 0, 0, 0),
-                    blurRadius: 12,
-                    spreadRadius: 2,
-                    offset: Offset(1, 1)),
-              ],
-              color: AppTheme.whiteColor,
+              // boxShadow: const [
+              //   BoxShadow(
+              //       color: Color.fromARGB(17, 0, 0, 0),
+              //       blurRadius: 12,
+              //       spreadRadius: 2,
+              //       offset: Offset(1, 1)),
+              // ],
+              color: Color.fromARGB(255, 218, 232, 225),
               borderRadius: BorderRadius.circular(12)),
           child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -81,7 +81,7 @@ class DashboardScreen extends StatelessWidget {
                                 Icon(bottomItems[index]["svg"],
                                     size: 22,
                                     color: index == controller.tabIndex
-                                        ? AppTheme.primaryColor
+                                            ? const Color.fromARGB(255, 21, 134, 6)
                                         : Colors.black38),
                                 SizedBox(
                                   height: 4,
@@ -91,7 +91,7 @@ class DashboardScreen extends StatelessWidget {
                                   style: GoogleFonts.inter(
                                       fontSize: 12,
                                       color: index == controller.tabIndex
-                                          ? AppTheme.primaryColor
+                                          ? const Color.fromARGB(255, 21, 134, 6)
                                           : Colors.black38,
                                       fontWeight: FontWeight.w500),
                                 )

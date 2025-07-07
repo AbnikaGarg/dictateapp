@@ -100,6 +100,7 @@ class Recordcontroller extends GetxController {
     PermissionStatus status = await Permission.microphone.request();
     return status.isGranted;
   }
+
   final Codec _codec = Codec.pcm16WAV;
 
   Duration currentPositionCurrent = Duration.zero;
@@ -125,25 +126,18 @@ class Recordcontroller extends GetxController {
       //     sampleRate: 44100,
       //     bitRate: 32000 //128000,
       //     );
-      var recordingDataControllerUint8 = StreamController<Uint8List>();
 
       // Start recording and store the file path
       flutterplayer.onProgress!.listen((event) {
         recordingSeconds = event.position;
         print("flutterplayer" + recordingSeconds.toString());
         update();
-      }); recordingDataControllerUint8.stream.listen((Uint8List data) {
-        // Process my frame in data
-        print("Received chunk: ${data.length} bytes");
-
       });
+
       await recorder.startRecorder(
-      //  toFile: filePath,numChannels: 1,
-     
-        toStream: recordingDataControllerUint8.sink,
- codec: Codec.pcm16, // or another codec supported on iOS
-  sampleRate: 44100,
-  bitRate: 128000,
+        toFile: filePath, numChannels: 1,
+        sampleRate: 44100,
+        bitRate: 128000,
         //   bitRate: 128000,
         //   sampleRate: 44100,
 
@@ -151,7 +145,7 @@ class Recordcontroller extends GetxController {
         // bitRate: 32000, //128000,
         // numChannels: 1,
       );
-     
+
       recorder.onProgress!.listen((evwnt) {
         currentPositionCurrent = evwnt.duration;
         print("recorder:" + currentPositionCurrent.toString());
